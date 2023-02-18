@@ -2,7 +2,6 @@ package com.oneentropy.udp.pub.sub.conf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
-import com.oneentropy.udp.pub.sub.model.ChannelController;
 import com.oneentropy.udp.pub.sub.config.UdpChannelProperties;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,11 +25,6 @@ public class MockConf {
         return readChannelProperties();
     }
 
-
-    @Bean
-    public ChannelController mockChannelController(){
-        return new ChannelController();
-    }
 
     private UdpChannelProperties readChannelProperties() {
         try {

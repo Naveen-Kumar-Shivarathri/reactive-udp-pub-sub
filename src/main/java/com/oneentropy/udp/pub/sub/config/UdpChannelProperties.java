@@ -21,6 +21,7 @@ public class UdpChannelProperties{
         private String ipAddress;
         private int port;
         private ChannelStream.StreamType streamType;
+        private int threads;
 
 
     }

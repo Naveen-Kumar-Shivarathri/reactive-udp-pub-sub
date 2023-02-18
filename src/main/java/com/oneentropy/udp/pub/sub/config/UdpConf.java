@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
@@ -19,6 +20,7 @@ import java.net.*;
 import java.util.UUID;
 
 @Configuration
+@Import({UdpChannelControllerConf.class})
 @NoArgsConstructor
 @Slf4j
 public class UdpConf {
@@ -41,6 +43,7 @@ public class UdpConf {
     @Value("${one.entropy.reactive.udp.pub.sub.node.env:DEFAULT}")
     private String nodeEnv;
 
+
     @Bean
     public NodeIdentifier createNodeIdentifier(){
         String node = nodeName==DEFAULT? UUID.randomUUID().toString(): nodeName;
@@ -54,7 +57,7 @@ public class UdpConf {
         udpChannelProperties.getChannelMap().forEach((channelId, channel) -> {
             log.info("Creating channel for:{}", channelId);
             Sinks.Many<UdpPacket> sink = Sinks.many().multicast().onBackpressureBuffer();
-            Flux<UdpPacket> udpPacketFlux = sink.asFlux().share();
+            Flux<UdpPacket> udpPacketFlux = sink.asFlux().share().publishOn(Schedulers.parallel());
             if (channel.getStreamType() == ChannelStream.StreamType.RECEIVER) {
                 handleReceiverStream(channelCollection, channelId, channel, sink, udpPacketFlux);
             } else {
@@ -127,9 +130,9 @@ public class UdpConf {
                     try {
                         socket.receive(packet);
                         String message = new String(packet.getData(), 0, packet.getLength());
-                        UdpUtil.calculateLatency(message);
+                        channelController.incrementCount();
                         log.debug("Received message:" + message);
-                        UdpPacket udpPacket = UdpPacket.builder().data(UdpUtil.convertStringToJsonNode(message)).build();
+                        UdpPacket udpPacket = UdpUtil.deserializePacket(message);
                         sink.tryEmitNext(udpPacket);
                     } catch (IOException e) {
                         log.error("Encountered an exception reading message, error:{}", e.getMessage());
@@ -143,7 +146,7 @@ public class UdpConf {
 
                 }
                 return Mono.empty();
-            }).subscribeOn(Schedulers.newSingle("rcvr-" + channelId + ":Thread")).subscribe();
+            }).subscribeOn(Schedulers.newSingle("RCVR:"+channelId+":Thread")).subscribe();
 
         } catch (SocketException e) {
             log.error("Encountered an exception creating a new UDP socket, error:{}", e.getMessage());
