@@ -68,11 +68,11 @@ public class UdpUtil{
         }
     }
 
-    public static void calculateLatency(String message){
+    public static UdpPacket deserializePacket(String message){
         if(message==null||message.equals(""))
-            return;
-        long currentTime = System.currentTimeMillis();
+            return null;
         UdpPacket udpPacket = null;
+        long currentTime = System.currentTimeMillis();
         try {
             udpPacket = OBJECT_MAPPER.readValue(message, UdpPacket.class);
         } catch (JsonProcessingException e) {
@@ -82,6 +82,7 @@ public class UdpUtil{
         }
         long difference = currentTime-udpPacket.getMeta().getPktCrtTimestamp();
         log.debug("Latency:{}ms",difference);
+        return udpPacket;
     }
 
 

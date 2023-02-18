@@ -12,6 +12,7 @@ import java.util.Map;
 public class ChannelController {
 
     private Map<String, Boolean> rcvEventActivityMap;
+    private long messageCount;
 
     public boolean allowedToRun(String channelId){
         if(this.rcvEventActivityMap==null)
@@ -20,6 +21,10 @@ public class ChannelController {
             return rcvEventActivityMap.get(channelId);
         }
         return true;
+    }
+
+    public void incrementCount(){
+        this.messageCount++;
     }
 
 }
