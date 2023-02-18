@@ -1,0 +1,9 @@
+channelMap:
+  RCVRCHNL1:
+    ipAddress: 230.0.0.0
+    port: 4545
+    streamType: RECEIVER
+  SNDRCHNL1:
+    ipAddress: 230.0.0.0
+    port: 4545
+    streamType: SENDER
